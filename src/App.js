@@ -29,7 +29,8 @@ function App() {
         y: window.innerHeight / 2 - radius,
         r: radius,
         color: 'green',
-        image: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MjB8fHByb2ZpbGV8ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60'
+        image: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MjB8fHByb2ZpbGV8ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60',
+        dangerous : 70
       },
       {
         id: 3,
@@ -44,7 +45,7 @@ function App() {
     ]
 
     nodes.forEach(node => {
-      d3Graph.createCircleWithImage(node.x, node.y, node.r, node.image, node.clipId);
+      d3Graph.createCircleWithImage(node.x, node.y, node.r, node.image, node.clipId , node.dangerous);
     })
 
     d3Graph.connectAllNodes(nodes)
