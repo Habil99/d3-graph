@@ -6,30 +6,28 @@ class D3Graph {
   constructor() {
     this.nodes = nodes;
 
-    this.svg = d3.select('svg')
+    this.svg = d3.select("#parent-svg");
+
+    // for styling
+    this.svg.append("style", "text/css").text(this.getGraphStyles())
 
     this.parent = this.svg.append("g")
-    this.svg.attr('width', window.innerWidth).attr('height', window.innerHeight);
+    this.svg.attr('width', window.innerWidth).attr('height', window.innerHeight)
+      .attr('viewBox', `0 0 ${window.innerWidth} ${window.innerHeight}`);
     this.outerCircleRadius = 50;
 
     //outerCircleRadius will be dynamic in the future
 
-    this.zoom = d3.zoom().on("zoom", (event) => {
-      this.parent.attr("transform", event.transform);
-    })
-
-    this.svg.call(this.zoom);
+    // this.zoom = d3.zoom().on("zoom", (event) => {
+    //   this.parent.attr("transform", event.transform);
+    // })
+    //
+    // this.svg.call(this.zoom);
 
     this.d3GraphHelper = new D3GraphHelper(this.parent);
 
-    d3.selectAll("[data-head-node]").on("drag", (event, node) => {
-      node.x = event.x;
-      node.y = event.y;
-      this.moveNode(node);
-      this.connectAllNodes(this.nodes);
-    })
-
     this.render();
+    this.handleDragNodes()
   }
 
   render() {
@@ -40,9 +38,66 @@ class D3Graph {
     this.connectAllNodes(this.nodes);
   }
 
+  getGraphStyles() {
+    return `
+      .head-node {
+        cursor: pointer;
+      }
+    `
+  }
+
+  handleDragNodes() {
+    const self = this;
+
+    this.svg.selectAll("[data-head-node]").call(d3.drag().on("drag", function (event) {
+      // this is head node that`s tag is g and has data-head-node attribute and has data-head-node-id attribute with id, move group
+      const headGroup = d3.select(this);
+      const headNodeId = headGroup.attr("data-head-node-id");
+
+      // move head node
+      const headNode = self.nodes.find(node => node.id === +headNodeId);
+
+      if (headNode) {
+
+        const findDiff = (a, b) => {
+          return a - b;
+        }
+
+        const diffX = findDiff(headNode.x, event.x)
+        const diffY = findDiff(headNode.y, event.y)
+
+        headGroup.attr("transform", `translate(${-diffX}, ${-diffY})`);
+      }
+    }).on("end", function (event) {
+      // this is head node that`s tag is g and has data-head-node attribute and has data-head-node-id attribute with id, move group
+      const headGroup = d3.select(this);
+      const headNodeId = headGroup.attr("data-head-node-id");
+
+      const findDiff = (a, b) => {
+        return a - b;
+      }
+
+      // move head node
+      const headNode = self.nodes.find(node => node.id === +headNodeId);
+
+      if (headNode) {
+        const diffX = findDiff(headNode.x, event.x)
+        const diffY = findDiff(headNode.y, event.y)
+        console.log(event.x, event.y)
+
+        self.d3GraphHelper.updateNodePosition(headNode, diffX, diffY);
+      }
+    }))
+  }
+
   // create circle with image background
   createHeadNode(node) {
     const { x, y, r, image, clipId, dangerous } = node;
+
+    const headGroup = this.d3GraphHelper.createHeadGroup(node);
+
+    this.d3GraphHelper.setHeadGroup(headGroup)
+
     // with clip path
     this.d3GraphHelper.createClipPath(x, y, r, clipId);
 
@@ -56,8 +111,7 @@ class D3Graph {
     // append circle outside of image
 
     /** Outer Circle */
-    this.parent.append('circle')
-      .attr("data-head-node", true)
+    headGroup.append("circle")
       .attr('cx', x)
       .attr('cy', y)
       .attr('r', r + this.outerCircleRadius)
@@ -95,14 +149,6 @@ class D3Graph {
           .attr('stroke-dasharray', '5, 5');
       }
     })
-  }
-
-  // move node on drag
-  moveNode(node) {
-    const { x, y, id } = node;
-    this.parent.select(`#node-${id}`)
-      .attr('cx', x)
-      .attr('cy', y);
   }
 
   findNearestPointOnOuterCircle(node1, node2) {

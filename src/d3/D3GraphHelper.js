@@ -3,6 +3,18 @@ class D3GraphHelper {
     this.parent = parent;
   }
 
+  createHeadGroup({ x, y, id }) {
+    return this.parent.append("g")
+      .attr("data-head-node", true)
+      .attr("data-head-node-id", id)
+      .attr("cursor", "pointer")
+      .attr("transform", `translate(${x}px, ${y}px)`);
+  }
+
+  setHeadGroup(node) {
+    this.parent = node;
+  }
+
   createCircle(x, y, r, color) {
     this.parent.append('circle')
       .attr('cx', x)
@@ -43,7 +55,7 @@ class D3GraphHelper {
     this.parent.append('image')
       .attr('xlink:href', image)
       .attr('x', x - w - r / 3)
-      .attr('y', y - w  - r / 3)
+      .attr('y', y - w - r / 3)
       .attr('width', w)
       .attr('height', h)
       .attr('clip-path', `url(#${clipId})`)
@@ -90,14 +102,14 @@ class D3GraphHelper {
       .attr('stroke-width', 5)
   }
 
-  updateNode(node, x, y, r) {
+  updateNodePosition(node, x, y, r) {
     node.x = x;
     node.y = y;
     node.r = r;
   }
 
   createDetailNode(node, x, y, r) {
-    this.updateNode(node, x, y, r);
+    this.updateNodePosition(node, x, y, r);
     /**
      * create detail node that has image
      */

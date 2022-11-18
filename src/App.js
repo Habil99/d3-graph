@@ -6,10 +6,12 @@ function App() {
 
   useEffect(() => {
     const d3Graph = new D3Graph();
+
+    // d3Graph.handleDragNodes()
   }, [])
 
   return (
-    <svg></svg>
+    <svg id="parent-svg"></svg>
   );
 }
 
