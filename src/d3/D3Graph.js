@@ -85,6 +85,35 @@ class D3Graph {
         //     self.relations
         //   )
         // ) {
+
+        // const pathCoords = this.linker(
+        //   headDetail,
+        //   node,
+        //   relatedDetail,
+        //   relatedGroup
+        // );
+
+        // headDetail.pathCoords = pathCoords;
+        // headNode.details[0].pathCoords = self.linker(headNode.details[0], headNode, self.relations[0].details[0], self.relations[0]);
+        // d3.select("[data-relation-id=test]").transition(100).attr(
+        //   "d",
+        //   headNode.details[0].pathCoords
+        // );
+        self.d3GraphHelper.updateGroupPosition(
+          headNode,
+          event.x,
+          event.y
+        );
+        headNode.details[0].pathCoords = self.linker(
+          headNode.details[0],
+          headNode,
+          self.relations[0].details[0],
+          self.relations[0]
+        );
+        
+        d3.select("[data-relation-id=test]")
+          .attr("d", headNode.details[0].pathCoords)
+
         headGroup.attr("transform", `translate(${event.x}, ${event.y})`);
         // } else {
         //   // find overlapped head node
@@ -157,11 +186,21 @@ class D3Graph {
               //     self.relations
               //   )
               // ) {
+              
               self.d3GraphHelper.updateGroupPosition(
                 headNode,
                 event.x,
                 event.y
               );
+              headNode.details[0].pathCoords = self.linker(
+                headNode.details[0],
+                headNode,
+                self.relations[0].details[0],
+                self.relations[0]
+              );
+              d3.select("[data-relation-id=test]")
+                .transition(100)
+                .attr("d", headNode.details[0].pathCoords);
               // } else {
               //   // find overlapped head node
               //   const overlappedHead =
@@ -279,13 +318,25 @@ class D3Graph {
           //  find detail group of related group
           const relatedDetail = relatedGroup.details[0];
           const headDetail = detail;
-          
-          const headDetailNode = d3.select(`[${D3GraphConstants.DEFAULT_HEAD_NODE_CHILD_ID_ATTR}="${headDetail.id}"]`);
+
+          const headDetailNode = d3.select(
+            `[${D3GraphConstants.DEFAULT_HEAD_NODE_CHILD_ID_ATTR}="${headDetail.id}"]`
+          );
+
+          const pathCoords = this.linker(
+            headDetail,
+            node,
+            relatedDetail,
+            relatedGroup
+          );
+
+          headDetail.pathCoords = pathCoords;
 
           const curveLine = d3
             .select(d3.select("#parent-svg").select("g").node())
             .append("path")
-            .attr("d", this.linker(headDetail, node, relatedDetail, relatedGroup))
+            .attr("d", pathCoords)
+            .attr("data-relation-id", "test")
             .attr("stroke", "#ACACAC")
             .attr("stroke-width", 1)
             .attr("fill", "none")
@@ -298,37 +349,22 @@ class D3Graph {
   }
 
   linker(node1, head1, node2, head2) {
-    let { gX: x0, gY: y0 } = head1;
-    let { gX: x1, gY: y1 } = head2;
-
-    x0 = x0+ node1.gX
-    y0 = y0 + node1.gY
-    x1 = x1 + node2.gX
-    y1 = y1 + node2.gY
     // including head gx and gy
-    const { gX: hx0, gY: hy0 } = head1;
-    const { gX: hx1, gY: hy1 } = head2;
+    let { gX: hx0, gY: hy0 } = head1;
+    let { gX: hx1, gY: hy1 } = head2;
 
-    console.log(x0, y0, x1, y1);
-    console.log(hx0, hy0, hx1, hy1);
+    hx0 = hx0 + node1.gX;
+    hy0 = hy0 + node1.gY;
+    hx1 = hx1 + node2.gX;
+    hy1 = hy1 + node2.gY;
+    const k = this.outerCircleRadius * 2;
 
-    const k = (y1 - y0) / (x1 - x0);
-
-    // console.log(x0, y0, x1, y1, k);
-    console.log(head1, head2)
     const path = d3.path();
 
-    path.moveTo(x0, y0);
-    // path.bezierCurveTo(x0, y0, x1, y1, x1, y1);
-    path.bezierCurveTo(
-      x0,
-      y0,
-      hx0 + (hx1 - hx0) / 2,
-      hy0 + (hy1 - hy0) / 2,
-      x1,
-      y1
-    );
-    path.lineTo(x1, y1);
+    // move and line path without crossing head1 and head2 circles
+    path.moveTo(hx0, hy0);
+    path.bezierCurveTo(hx0, hy0, hx1 / k, hy1, hx1, hy1);
+    path.lineTo(hx1, hy1);
 
     return path.toString();
   }
