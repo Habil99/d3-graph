@@ -1,4 +1,6 @@
 import * as d3 from "d3";
+import * as rxJs from "rxjs";
+
 import D3GraphConstants from "./D3GraphConstants";
 import D3GraphHelper from "./D3GraphHelper";
 import nodes, { relations } from "./nodes";
@@ -13,7 +15,9 @@ class D3Graph {
     // for styling
     this.svg.append("style", "text/css").text(this.getGraphStyles());
 
-    this.parent = this.svg.append("g");
+    this.parent = this.svg
+      .append("g")
+      .attr(D3GraphConstants.DEFAULT_DATA_GROUP_WRAPPER, "true");
     this.svg
       .attr("width", window.innerWidth)
       .attr("height", window.innerHeight)
@@ -38,19 +42,15 @@ class D3Graph {
 
     this.render();
     this.handleDragNodes();
+    // this.d3GraphHelper.observeAllHeadNodePositionsWhileDragging();
   }
 
   render() {
-    console.log(this.relations[0].id, "RELATION RENDERING");
     this.nodes.forEach((node) => {
       this.createHeadNode(node);
     });
 
-    console.log(this.relations[0].id, "BEFORE CONNECT ALL NODES");
-
     this.connectAllNodes(this.nodes);
-
-    console.log(this.relations[0].id, "AFTER CONNECT ALL NODES");
   }
 
   getGraphStyles() {
@@ -64,26 +64,81 @@ class D3Graph {
   handleDragNodes() {
     const self = this;
 
+    function onDrag(event) {
+      const headGroup = d3.select(this);
+      const headNodeId = headGroup.attr(
+        D3GraphConstants.DEFAULT_HEAD_NODE_ID_DATA_ATTR
+      );
+      // move head node
+      const headNode =
+        self.nodes.find((node) => node.id === headNodeId) ||
+        self.relations.find((relation) => relation.id === headNodeId);
+
+      if (headNode) {
+        // and if not overlapping with other head node
+        const { x, y, dx, dy } = event;
+        // console.log(dx, dy)
+        // if (
+        //   !self.d3GraphHelper.isOverlappingWithOtherHeadNode(
+        //     x,
+        //     y,
+        //     self.relations
+        //   )
+        // ) {
+        headGroup.attr("transform", `translate(${event.x}, ${event.y})`);
+        // } else {
+        //   // find overlapped head node
+        //   const overlappedHead = self.d3GraphHelper.findOverlappedHeadNode(
+        //     x,
+        //     y,
+        //     self.relations
+        //   );
+
+        //   const overlappedHeadNode = d3.select(
+        //     `[${D3GraphConstants.DEFAULT_HEAD_NODE_ID_DATA_ATTR}="${overlappedHead.id}"]`
+        //   );
+        //   console.log(overlappedHeadNode);
+
+        //   // transition overlapped head node 20px to empty space
+        //   // find nearest empty space
+        //   const { gX, gY } = self.d3GraphHelper.findNearestEmptySpace(
+        //     overlappedHead,
+        //     headNode,
+        //     self.relations
+        //   );
+
+        //   self.d3GraphHelper.updateGroupPosition(overlappedHeadNode, gX, gY);
+
+        //   self.d3GraphHelper.updateGroupPosition(headGroup, x, y);
+        //   // let gX = x + 1,
+        //     // gY = y + 1;
+
+        //   overlappedHeadNode
+        //     .transition()
+        //     .duration(200)
+        //     .attr("transform", `translate(${gX}, ${gY})`);
+
+        //     console.log(event)
+        // }
+        // else {
+        //   // if overlapping with other head node, move back to original position
+        //   headGroup.attr(
+        //     "transform",
+        //     `translate(${headNode.gX}, ${headNode.gY})`
+        //   );
+        // }
+      }
+    }
+
     this.svg
       .selectAll(`[${D3GraphConstants.DEFAULT_HEAD_NODE_DATA_ATTR}]`)
       .call(
         d3
           .drag()
-          .on("drag", function (event) {
-            const headGroup = d3.select(this);
-            const headNodeId = headGroup.attr(
-              D3GraphConstants.DEFAULT_HEAD_NODE_ID_DATA_ATTR
-            );
-            // move head node
-            const headNode =
-              self.nodes.find((node) => node.id === headNodeId) ||
-              self.relations.find((relation) => relation.id === headNodeId);
-
-            if (headNode) {
-              headGroup.attr("transform", `translate(${event.x}, ${event.y})`);
-            }
-          })
+          .on("drag", onDrag)
           .on("end", function (event) {
+            const { x, y, dx, dy } = event;
+
             const headGroup = d3.select(this);
             const headNodeId = headGroup.attr(
               D3GraphConstants.DEFAULT_HEAD_NODE_ID_DATA_ATTR
@@ -95,11 +150,57 @@ class D3Graph {
               self.relations.find((relation) => relation.id === headNodeId);
 
             if (headNode) {
+              // if (
+              //   !self.d3GraphHelper.isOverlappingWithOtherHeadNode(
+              //     x,
+              //     y,
+              //     self.relations
+              //   )
+              // ) {
               self.d3GraphHelper.updateGroupPosition(
                 headNode,
                 event.x,
                 event.y
               );
+              // } else {
+              //   // find overlapped head node
+              //   const overlappedHead =
+              //     self.d3GraphHelper.findOverlappedHeadNode(
+              //       x,
+              //       y,
+              //       self.relations
+              //     );
+
+              //   const overlappedHeadNode = d3.select(
+              //     `[${D3GraphConstants.DEFAULT_HEAD_NODE_ID_DATA_ATTR}="${overlappedHead.id}"]`
+              //   );
+              //   console.log(overlappedHeadNode);
+
+              //   // transition overlapped head node 20px to empty space
+              //   // find nearest empty space
+              //   const { gX, gY } = self.d3GraphHelper.findNearestEmptySpace(
+              //     overlappedHead,
+              //     headNode,
+              //     self.relations
+              //   );
+
+              //   self.d3GraphHelper.updateGroupPosition(
+              //     overlappedHeadNode,
+              //     gX,
+              //     gY
+              //   );
+
+              //   self.d3GraphHelper.updateGroupPosition(headGroup, x, y);
+              //   // let gX = x + 1,
+              //   // gY = y + 1;
+
+              //   overlappedHeadNode
+              //     .transition()
+              //     .duration(200)
+              //     .attr("transform", `translate(${gX}, ${gY})`);
+
+              //   console.log(event);
+              // }
             }
           })
       );
@@ -140,6 +241,8 @@ class D3Graph {
     if (node?.details?.length) {
       this.d3GraphHelper.createDetailNodes(node, this.outerCircleRadius);
     }
+
+    return headGroup;
   }
 
   connectAllNodes(nodes) {
@@ -154,7 +257,7 @@ class D3Graph {
       node.details.forEach((detail) => {
         // find relation inside relations
         const relatedGroup = this.relations.find(
-          (relation) => (relation.id === detail.relationId)
+          (relation) => relation.id === detail.relationId
         );
 
         if (relatedGroup) {
@@ -165,27 +268,83 @@ class D3Graph {
             node
           );
 
+          // update related group position
+          this.d3GraphHelper.updateGroupPosition(relatedGroup, gX, gY);
+
           // create related group
           const relatedGroupElement = this.createHeadNode(relatedGroup, gX, gY);
-          // create related group nodes
-          console.log(relatedGroup.id, "AFTER HEAD NODE CREATION");
+
+          // this.d3GraphHelper.updateGroupPosition(relatedGroup, gX, gY);
+
+          //  find detail group of related group
+          const relatedDetail = relatedGroup.details[0];
+          const headDetail = detail;
+          
+          const headDetailNode = d3.select(`[${D3GraphConstants.DEFAULT_HEAD_NODE_CHILD_ID_ATTR}="${headDetail.id}"]`);
+
+          const curveLine = d3
+            .select(d3.select("#parent-svg").select("g").node())
+            .append("path")
+            .attr("d", this.linker(headDetail, node, relatedDetail, relatedGroup))
+            .attr("stroke", "#ACACAC")
+            .attr("stroke-width", 1)
+            .attr("fill", "none")
+            .attr("stroke-dasharray", "5, 5")
+            .attr("stroke-linecap", "round")
+            .attr("stroke-linejoin", "round");
         }
       });
     });
+  }
+
+  linker(node1, head1, node2, head2) {
+    let { gX: x0, gY: y0 } = head1;
+    let { gX: x1, gY: y1 } = head2;
+
+    x0 = x0+ node1.gX
+    y0 = y0 + node1.gY
+    x1 = x1 + node2.gX
+    y1 = y1 + node2.gY
+    // including head gx and gy
+    const { gX: hx0, gY: hy0 } = head1;
+    const { gX: hx1, gY: hy1 } = head2;
+
+    console.log(x0, y0, x1, y1);
+    console.log(hx0, hy0, hx1, hy1);
+
+    const k = (y1 - y0) / (x1 - x0);
+
+    // console.log(x0, y0, x1, y1, k);
+    console.log(head1, head2)
+    const path = d3.path();
+
+    path.moveTo(x0, y0);
+    // path.bezierCurveTo(x0, y0, x1, y1, x1, y1);
+    path.bezierCurveTo(
+      x0,
+      y0,
+      hx0 + (hx1 - hx0) / 2,
+      hy0 + (hy1 - hy0) / 2,
+      x1,
+      y1
+    );
+    path.lineTo(x1, y1);
+
+    return path.toString();
   }
 
   findNearestPointOnOuterCircle(node1, node2) {
     // exclude the outer circle radius
     const distance =
       Math.sqrt(
-        Math.pow(node1.x - node2.x, 2) + Math.pow(node1.y - node2.y, 2)
+        Math.pow(node1.gX - node2.gX, 2) + Math.pow(node1.gY - node2.gY, 2)
       ) -
       this.outerCircleRadius * 2;
     const angle =
-      (Math.atan2(node2.y - node1.y, node2.x - node1.x) * 180) / Math.PI;
+      (Math.atan2(node2.gY - node1.gY, node2.gX - node1.gX) * 180) / Math.PI;
 
-    const x = node1.x + distance * Math.cos((angle * Math.PI) / 180);
-    const y = node1.y + distance * Math.sin((angle * Math.PI) / 180);
+    const x = node1.gX + distance * Math.cos((angle * Math.PI) / 180);
+    const y = node1.gY + distance * Math.sin((angle * Math.PI) / 180);
 
     return { x, y };
   }

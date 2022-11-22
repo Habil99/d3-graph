@@ -7,6 +7,7 @@ const D3GraphConstants = {
   DEFAULT_HEAD_NODE_CHILD_ATTR: "data-head-node-child",
   DEFAULT_HEAD_NODE_CHILD_CLASS: "head-node-child",
   DEFAULT_HEAD_NODE_CHILD_ID_ATTR: "data-head-node-child-id",
+  DEFAULT_DATA_GROUP_WRAPPER: "data-group-wrapper",
 }
 
 export default D3GraphConstants;

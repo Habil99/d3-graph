@@ -115,8 +115,21 @@ export const relations = [
     dangerous: 25,
     image:
       "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTh8fHByb2ZpbGV8ZW58MHx8MHx8&auto=format&fit=crop&w=700&q=60",
+    details: [
+      {
+        id: generateUniqueId(),
+        x: 0,
+        y: 0,
+        gX: 0,
+        gY: 0,
+        r: 20,
+        image: "https://img.icons8.com/ios/2x/facebook-new.png",
+        relationId: null,
+        clipId: generateUniqueId(),
+        name: "Node 2",
+      },
+    ],
   },
 ];
-
 
 export default nodes;

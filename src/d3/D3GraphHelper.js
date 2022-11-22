@@ -2,6 +2,7 @@ import D3GraphConstants from "./D3GraphConstants";
 import D3GroupNode from "./D3GroupNode";
 
 import * as d3 from "d3";
+import * as rxJs from "rxjs";
 
 // import D3DetailNode from "./D3DetailNode";
 
@@ -210,6 +211,7 @@ class D3GraphHelper {
 
   getRandomPosition(x, y, args) {
     const { min, max } = args;
+
     const randomX = Math.floor(Math.random() * (max - min + 1) + min);
     const randomY = Math.floor(Math.random() * (max - min + 1) + min);
 
@@ -234,15 +236,35 @@ class D3GraphHelper {
 
   calculatePosition(headGx, headGy, data) {
     // take random position
+    let min,
+      max,
+      radius = 100;
+
+    const transform = d3
+      .select(`[${D3GraphConstants.DEFAULT_DATA_GROUP_WRAPPER}]`)
+      .attr("transform");
+
+    if (transform) {
+      const scaleX = transform.split("scale(")[1].split(")")[0];
+      radius = radius * scaleX;
+
+      min = (-window.innerWidth / 4) * scaleX - radius * 2;
+      max = (window.innerWidth / 4) * scaleX - radius * 2;
+    } else {
+      min = -window.innerWidth / 4 - radius * 2;
+      max = window.innerWidth / 4 - radius * 2;
+    }
     const { gX, gY } = this.getRandomPosition(headGx, headGy, {
-      min: 0,
-      max: 300,
+      // min is max window size including svg g scale
+      min: min,
+      max: max,
+      // max: 300,
     });
 
     // check if the position is not overlapped
     const isOverlapped = this.checkOverlapped(gX, gY, {
       nodes: data,
-      radius: 100,
+      radius,
     });
 
     if (isOverlapped) {
@@ -263,6 +285,104 @@ class D3GraphHelper {
       ...this.nodes.map((node) => node.details),
       ...relations,
     ]);
+  }
+
+  observeAllHeadNodePositionsWhileDragging() {
+    const allHeadNodes = d3
+      .selectAll(`[${D3GraphConstants.DEFAULT_HEAD_NODE_DATA_ATTR}]`)
+      .nodes();
+
+    // allHeadNodes.forEach((headNode) => {
+    //   rxJs.fromEvent(headNode, "mousemove").pipe().subscribe((observer) => {
+    //     if (observer.target) {
+    //       console.log(observer.target.parentElement)
+    //       const id = observer.target.parentElement.dataset.headNodeId;
+
+    //       const node = this.nodes.find((node) => node.id === id);
+    //       console.log(node, id)
+
+    //       if (node) {
+    //         // if this node is overlapping with other nodes, then change the position of this node
+    //         const { gX, gY } = this.calculatePosition(node.gX, node.gY, [
+    //           ...this.nodes,
+    //         ])
+
+    //         console.log(gX, gY)
+    //       }
+    //     }
+    //   })
+    // })
+  }
+
+  isOverlappingWithOtherHeadNode(x, y, relations) {
+    const isOverlapped = this.checkOverlapped(x, y, {
+      nodes: [...this.nodes, ...relations],
+      radius: 100,
+    });
+
+    return isOverlapped;
+  }
+
+  findOverlappedHeadNode(x, y, relations) {
+    let overlappedHeadNode = null;
+
+    [...this.nodes, ...relations].forEach((node) => {
+      const distance = Math.sqrt(
+        Math.pow(x - node.gX, 2) + Math.pow(y - node.gY, 2)
+      );
+      if (distance < 100 * 2) {
+        overlappedHeadNode = node;
+      }
+    });
+
+    return overlappedHeadNode;
+  }
+
+  findNearestEmptySpace(overlappedHead, headNode, relations) {
+    // find nearest empty space around the two nodes that are overlapping by increasing 5px each time
+    const { gX: headGx, gY: headGY } = headNode;
+    const { gX: overlappedHeadGx, gY: overlappedHeadGY } = overlappedHead;
+
+    const distance = Math.sqrt(
+      Math.pow(headGx - overlappedHeadGx, 2) +
+        Math.pow(headGY - overlappedHeadGY, 2)
+    );
+
+    const angle = Math.atan2(
+      overlappedHeadGY - headGY,
+      overlappedHeadGx - headGx
+    );
+
+    const gX = headGx + distance * Math.cos(angle);
+    const gY = headGY + distance * Math.sin(angle);
+
+    const isOverlapped = this.isOverlappingWithOtherHeadNode(gX, gY, relations);
+
+    if (isOverlapped) {
+      return this.findNearestEmptySpace(overlappedHead, headNode, relations);
+    }
+
+    return { gX, gY };
+  }
+
+  createPath(node, relatedGroup, line, group) {
+    const { gX: headGx, gY: headGY } = node;
+    const { gX: relatedGroupGx, gY: relatedGroupGY } = relatedGroup;
+
+    console.log(headGY, headGx, relatedGroupGY, relatedGroupGx);
+
+    const path = line([
+      { x: headGx, y: headGY },
+      { x: relatedGroupGx, y: relatedGroupGY },
+    ]);
+    console.log(path);
+
+    this.wrapper
+      .append("path")
+      .attr("d", path)
+      .attr("stroke", "black")
+      .attr("stroke-width", 1)
+      .attr("fill", "none");
   }
 }
 
