@@ -43,7 +43,7 @@ const nodes = [
         relationId: detailId,
         clipId: generateUniqueId(),
         name: "Node 2",
-        bezierCurve: null
+        bezierCurve: null,
       },
       {
         id: generateUniqueId(),
@@ -105,6 +105,7 @@ const nodes = [
 export const relations = [
   {
     id: detailId,
+    relationName: "Facebook",
     clipId: generateUniqueId(),
     name: "Node 4",
     x: 0,

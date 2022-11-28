@@ -321,7 +321,10 @@ class D3Graph {
 
           const curveLine = d3
             .select(d3.select("#parent-svg").select("g").node())
-            .append("path")
+
+
+            curveLine.append("path")
+            .attr("id", "curve")
             .attr("d", pathCoords)
             .attr("data-relation-id", "test")
             .attr("stroke", "#ACACAC")
@@ -337,28 +340,18 @@ class D3Graph {
           };
 
           // create a shape so that the shape is on the line and at the same angle to it
-          
-
-          
-
-
           headDetail.bezierCurve = curveLine;
 
-          // draw arc on center of curve line
-          // const arc = d3
-          //   .select(d3.select("#parent-svg").select("g").node())
-          //   .append("path")
-          //   .attr("transform", `translate(${200}, ${300})`)
-          //   .attr(
-          //     "d",
-          //     this.arcPath(headDetail, node, relatedDetail, relatedGroup)
-          //   )
-          //   .attr("stroke", "#ACACAC")
-          //   .attr("stroke-width", 1)
-          //   .attr("fill", "none")
-          //   .attr("stroke-dasharray", "5, 5")
-          //   .attr("stroke-linecap", "round")
-          //   .attr("stroke-linejoin", "round");
+          curveLine
+            .append("text")
+            .append("textPath")
+            .attr("xlink:href", "#curve")
+            .attr("startOffset", "50%")
+            .style("cursor", "pointer")
+            .text(relatedGroup.relationName)
+            .on("click", (event) => {
+              console.log(relatedGroup.relationName);
+            });
         }
       });
     });
@@ -410,7 +403,7 @@ class D3Graph {
         y0: hy0,
         x1: hx1,
         y1: hy1,
-        k: k
+        k: k,
       },
       pathCoords: path.toString(),
     };
