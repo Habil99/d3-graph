@@ -1,0 +1,15 @@
+
+Gjavascript:S1128"$Remove this unused import of 'rxJs'.(÷¯¦ê8¢¦ïæË0
+Ajavascript:S125"Remove this commented out code.(ÊÊ‘Ö8¢¦ïæË0
+vjavascript:S107V"UMethod 'createImageWithCustomSize' has too many parameters (8). Maximum allowed is 7.(³şà8£¦ïæË0
+djavascript:S1481¥";Remove the declaration of the unused 'detailNode' variable.(§­İèøÿÿÿÿ8£¦ïæË0
+ajavascript:S1854¥"8Remove this useless assignment to variable "detailNode".(§­İèøÿÿÿÿ8£¦ïæË0
+Gjavascript:S125"Remove this commented out code.(Ü‡§ÿÿÿÿÿ8¤¦ïæË0
+fjavascript:S1481£"=Remove the declaration of the unused 'allHeadNodes' variable.(‘„°Ëÿÿÿÿÿ8¤¦ïæË0
+cjavascript:S1854£":Remove this useless assignment to variable "allHeadNodes".(‘„°Ëÿÿÿÿÿ8¤¦ïæË0
+Gjavascript:S125­"Remove this commented out code.(‘Ã»İøÿÿÿÿ8¤¦ïæË0
+Bjavascript:S125°"Remove this commented out code.(ë¡„ü8¤¦ïæË0
+\javascript:S1481"3Remove the declaration of the unused 'gX' variable.(ğã“°ùÿÿÿÿ8¤¦ïæË0
+Yjavascript:S1854"0Remove this useless assignment to variable "gX".(ğã“°ùÿÿÿÿ8¥¦ïæË0
+\javascript:S1481"3Remove the declaration of the unused 'gY' variable.(ğã“°ùÿÿÿÿ8¥¦ïæË0
+Yjavascript:S1854"0Remove this useless assignment to variable "gY".(ğã“°ùÿÿÿÿ8¥¦ïæË0

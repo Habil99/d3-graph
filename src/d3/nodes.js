@@ -43,7 +43,7 @@ const nodes = [
         relationId: detailId,
         clipId: generateUniqueId(),
         name: "Node 2",
-        pathCoords: ""
+        bezierCurve: null
       },
       {
         id: generateUniqueId(),
