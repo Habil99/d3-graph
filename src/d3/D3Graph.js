@@ -8,7 +8,6 @@ class D3Graph {
     constructor() {
         this.nodes = nodes;
         this.relations = relations;
-
         this.svg = d3.select("#parent-svg");
 
         // for styling
@@ -37,7 +36,7 @@ class D3Graph {
         // ]);
 
         this.d3GraphHelper = new D3GraphHelper(this.parent, this.nodes);
-
+        this.d3GraphHelper.createModal();
         this.render();
         this.handleDragNodes();
         // this.d3GraphHelper.observeAllHeadNodePositionsWhileDragging();
@@ -347,15 +346,27 @@ class D3Graph {
                         .attr("stroke-linejoin", "round")
                         .style('cursor', 'pointer')
                     // add text above the curveline
-                    curveLine.append("text")
+                    // curveLine.append('rect')
+                    //     .attr('x', gX)
+                    //     .attr('y', gY)
+                    //     .attr('width', 20)
+                    //     .attr('height', 20)
+                    //     .attr('fill', 'red')
+
+
+                    curveLine
+                        .append('a')
+                        .attr('fill', 'red')
+                        .append("text")
                         .append("textPath")
                         .attr("xlink:href", "#curve")
-                        .attr("startOffset","50%")
+                        .attr("startOffset", "50%")
                         .style('cursor', 'pointer')
                         .text(relatedGroup.relationName)
                         .on('click', (event) => {
-                            console.log(relatedGroup.relationName);
-                        });
+                            this.d3GraphHelper.modalToggle('open');
+                        })
+
                 }
             });
         });
