@@ -70,47 +70,39 @@ class D3Graph {
 
         currentGroup.details.forEach((detail) => {
           detail.relatedDetails.forEach((relatedDetail) => {
+            const oppositeRelatedDetail = self.nodes
+              .find((node) => node.id === relatedDetail.parentId)
+              .details.find((detail) => detail.id === relatedDetail.id);
+
+            const oppositeRelatedGroup = self.nodes.find(
+              (node) => node.id === relatedDetail.parentId
+            );
+
             relatedDetail.pathCoords = self.linker(
               detail,
               currentGroup,
-              self.nodes
-                .find((node) => node.id === relatedDetail.parentId)
-                .details.find((detail) => detail.id === relatedDetail.id),
-              self.nodes.find((node) => node.id === relatedDetail.parentId)
+              oppositeRelatedDetail,
+              oppositeRelatedGroup
             ).pathCoords;
 
-            console.log(d3.select(`[data-relation-id=${relatedDetail.curveRelationId}]`))
+            function findId() {
+              let id;
+              for (const element of oppositeRelatedDetail.relatedDetails) {
+                for (const el of currentGroup.details) {
+                  if (element.id === el.id) {
+                   id =  element.curveRelationId
+                  }
+                }
+              }
 
-            d3.select(`[data-relation-id=${relatedDetail.curveRelationId}]`).attr(
-              "d",
-              relatedDetail.pathCoords
-            );
+              return id;
+            }
 
-            // const groups = self.getTwoConnectedGroupInfo(
-            //   detail,
-            //   "all",
-            //   currentNode
-            // );
+            const id = relatedDetail.curveRelationId ? relatedDetail.curveRelationId : findId();
 
-            // currentNode.attr("transform", `translate(${event.x}, ${event.y})`);
-
-            // currentGroup.details.forEach((detail) => {
-            //   const { relatedDetailGroup, relatedGroup } =
-            //     self.getTwoConnectedGroupInfo(detail);
-
-            //   detail.pathCoords = self.linker(
-            //     detail,
-            //     currentGroup,
-            //     relatedDetailGroup,
-            //     relatedGroup
-            //   ).pathCoords;
-
-            //   console.log(detail.relatedDetail);
-            //   detail.relatedDetail.bezierCurves.forEach((curve) => {
-            //     console.log("hereee");
-            //     curve.attr("d", detail.pathCoords);
-            //   });
-            // });
+            d3.select(
+              `[data-relation-id=${id}]`
+            ).attr("d", relatedDetail.pathCoords);
           });
         });
       }
