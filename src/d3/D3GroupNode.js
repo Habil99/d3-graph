@@ -11,16 +11,16 @@ class D3GroupNode {
   }
 
   createGroup() {
-    const { gX, gY } = this.position;
+    const { gx, gy } = this.position;
 
-    this.detail.gX = gX;
-    this.detail.gY = gY;
+    this.detail.gx = gx;
+    this.detail.gy = gy;
 
     return this.parent
       .append("g")
       .attr(D3GraphConstants.DEFAULT_HEAD_NODE_CHILD_ID_ATTR, this.detail.id)
       .attr(D3GraphConstants.DEFAULT_HEAD_NODE_CHILD_ATTR, true)
-      .attr("transform", `translate(${this.detail.gX}, ${this.detail.gY})`);
+      .attr("transform", `translate(${this.detail.gx}, ${this.detail.gy})`);
   }
 
   getGroup() {

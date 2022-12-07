@@ -26,18 +26,99 @@ class D3GraphHelper {
     return window.innerWidth / 2;
   }
 
-  createHeadGroup(node, gX, gY) {
+  calcAngle(gx, gy) {
+    const x = gx - this.screenCenterX;
+    const y = gy - this.screenCenterY;
+
+    return Math.atan2(y, x);
+  }
+
+  calcDistance(gx, gy) {
+    const x = gx - this.screenCenterX;
+    const y = gy - this.screenCenterY;
+
+    return Math.sqrt(x * x + y * y);
+  }
+
+  calcRandomPosition() {
+    const gx = Math.random() * window.innerWidth;
+    const gy = Math.random() * window.innerHeight;
+
+    return { gx, gy };
+  }
+
+  checkOverlap(nodes, { gx, gy }) {
+    const isOverlap = nodes.some((node) => {
+      const { gx: gx1, gy: gy1 } = node;
+      const distance = Math.sqrt((gx - gx1) ** 2 + (gy - gy1) ** 2);
+
+      return distance < D3GraphConstants.groupRadius * 2;
+    });
+
+    return isOverlap;
+  }
+
+  calcPositionForCurrentNode(nodes, node) {
+    /**
+     * 3. find random position on the screen and check overlap with other nodes
+     * 4. if overlap, find another random position
+     * 5. if no overlap, return the position
+     */
+
+    let isOverlap = true;
+    let position = null;
+    
+
+    // without node, it will be the head node
+
+    if (node.isMain) {
+      // center of the screen
+      position = { gx: this.screenCenterX, gy: this.screenCenterY };
+      isOverlap = false;
+    } else {
+      while (isOverlap) {
+        const { gx, gy } = this.calcRandomPosition();
+  
+        position = { gx, gy };
+  
+        isOverlap = this.checkOverlap(nodes, { gx, gy });
+      }
+  
+      return position;
+    }
+
+    return position;
+  }
+
+  getRelationId(detail, relatedDetail) {
+    return `${detail.id}-${relatedDetail.id}`;
+  }
+
+  createRelation(
+    relationId,
+    pathCoords
+  ) {
+    
+  }
+
+  createHeadGroup({ id }, { gx, gy }) {
+    console.log(gx, gy);
     return this.wrapper
       .append("g")
       .attr("data-head-node", true)
-      .attr("data-head-node-id", node.id)
+      .attr("data-head-node-id", id)
       .attr("cursor", "pointer")
-      .attr("transform", `translate(${node.gX || gX}, ${node.gY || gY})`);
+      .attr("transform", `translate(${gx}, ${gy})`);
+  }
+
+  setPosition(headGroup, position) {
+    headGroup.gx = position.gx;
+    headGroup.gy = position.gy;
   }
 
   // create group inside data-head-node-id
-  createGroupInsideHeadNode(headNode, detail, gX, gY) {
-    return new D3GroupNode(this.parent, headNode, detail, { gX, gY });
+  createGroupInsideHeadNode(headNode, detail, gx, gy) {
+    return new D3GroupNode(this.parent, headNode, detail, { gx, gy });
   }
 
   setHeadGroup(node) {
@@ -146,9 +227,9 @@ class D3GraphHelper {
       .attr("stroke-width", 5);
   }
 
-  updateGroupPosition(node, gX, gY) {
-    node.gX = gX;
-    node.gY = gY;
+  updateGroupPosition(node, gx, gy) {
+    node.gx = gx;
+    node.gy = gy;
   }
 
   updateNodePosition(node, x, y) {
@@ -170,29 +251,29 @@ class D3GraphHelper {
   }
 
   calculatePositionOnOuterCircle(
-    headGx,
-    headGY,
+    headgx,
+    headgy,
     outerCircleRadius,
     index,
     length
   ) {
     const angle = (360 / length) * index;
-    const gX =
-      headGx + outerCircleRadius * 2 * Math.cos((angle * Math.PI) / 180);
-    const gY =
-      headGY + outerCircleRadius * 2 * Math.sin((angle * Math.PI) / 180);
+    const gx =
+      headgx + outerCircleRadius * 2 * Math.cos((angle * Math.PI) / 180);
+    const gy =
+      headgy + outerCircleRadius * 2 * Math.sin((angle * Math.PI) / 180);
 
-    return { gX: headGx - gX, gY: headGY - gY };
+    return { gx: headgx - gx, gy: headgy - gy };
   }
 
   createDetailNodes(headNode, outerCircleRadius) {
-    const { gX: headGx, gY: headGY, details } = headNode;
+    const { gx: headgx, gy: headgy, details } = headNode;
 
     details.forEach((detail, index) => {
       // calculate position of detail node on the outer circle
-      const { gX, gY } = this.calculatePositionOnOuterCircle(
-        headGx,
-        headGY,
+      const { gx, gy } = this.calculatePositionOnOuterCircle(
+        headgx,
+        headgy,
         outerCircleRadius,
         index,
         details.length
@@ -201,8 +282,8 @@ class D3GraphHelper {
       const groupInsideHeadNode = this.createGroupInsideHeadNode(
         headNode,
         detail,
-        gX,
-        gY
+        gx,
+        gy
       );
 
       this.createDetailNode(detail, groupInsideHeadNode);
@@ -215,7 +296,7 @@ class D3GraphHelper {
     const randomX = Math.floor(Math.random() * (max - min + 1) + min);
     const randomY = Math.floor(Math.random() * (max - min + 1) + min);
 
-    return { gX: x + randomX, gY: y + randomY };
+    return { gx: x + randomX, gy: y + randomY };
   }
 
   checkOverlapped(x, y, args) {
@@ -224,7 +305,7 @@ class D3GraphHelper {
 
     nodes.forEach((node) => {
       const distance = Math.sqrt(
-        Math.pow(x - node.gX, 2) + Math.pow(y - node.gY, 2)
+        Math.pow(x - node.gx, 2) + Math.pow(y - node.gy, 2)
       );
       if (distance < radius * 2) {
         isOverlapped = true;
@@ -234,7 +315,7 @@ class D3GraphHelper {
     return isOverlapped;
   }
 
-  calculatePosition(headGx, headGy, data) {
+  calculatePosition(headgx, headgy, data) {
     // take random position
     let min,
       max,
@@ -254,7 +335,7 @@ class D3GraphHelper {
       min = -window.innerWidth / 4 - radius * 2;
       max = window.innerWidth / 4 - radius * 2;
     }
-    const { gX, gY } = this.getRandomPosition(headGx, headGy, {
+    const { gx, gy } = this.getRandomPosition(headgx, headgy, {
       // min is max window size including svg g scale
       min: min,
       max: max,
@@ -262,25 +343,25 @@ class D3GraphHelper {
     });
 
     // check if the position is not overlapped
-    const isOverlapped = this.checkOverlapped(gX, gY, {
+    const isOverlapped = this.checkOverlapped(gx, gy, {
       nodes: data,
       radius,
     });
 
     if (isOverlapped) {
-      return this.calculatePosition(headGx, headGy, data);
-      // return { gX, gY };
+      return this.calculatePosition(headgx, headgy, data);
+      // return { gx, gy };
     }
 
-    return { gX, gY };
+    return { gx, gy };
   }
 
   findPositionForRelatedGroup(relatedGroup, relations, head) {
     // find position for related group
-    const { gX: headGx, gY: headGY } = head;
+    const { gx: headgx, gy: headgy } = head;
 
     // calculate position on screen away from head node
-    return this.calculatePosition(headGx, headGY, [
+    return this.calculatePosition(headgx, headgy, [
       ...this.nodes,
       ...this.nodes.map((node) => node.details),
       ...relations,
@@ -303,11 +384,11 @@ class D3GraphHelper {
 
     //       if (node) {
     //         // if this node is overlapping with other nodes, then change the position of this node
-    //         const { gX, gY } = this.calculatePosition(node.gX, node.gY, [
+    //         const { gx, gy } = this.calculatePosition(node.gx, node.gy, [
     //           ...this.nodes,
     //         ])
 
-    //         console.log(gX, gY)
+    //         console.log(gx, gy)
     //       }
     //     }
     //   })
@@ -328,7 +409,7 @@ class D3GraphHelper {
 
     [...this.nodes, ...relations].forEach((node) => {
       const distance = Math.sqrt(
-        Math.pow(x - node.gX, 2) + Math.pow(y - node.gY, 2)
+        Math.pow(x - node.gx, 2) + Math.pow(y - node.gy, 2)
       );
       if (distance < 100 * 2) {
         overlappedHeadNode = node;
@@ -340,42 +421,39 @@ class D3GraphHelper {
 
   findNearestEmptySpace(overlappedHead, headNode, relations) {
     // find nearest empty space around the two nodes that are overlapping by increasing 5px each time
-    const { gX: headGx, gY: headGY } = headNode;
-    const { gX: overlappedHeadGx, gY: overlappedHeadGY } = overlappedHead;
+    const { gx: headgx, gy: headgy } = headNode;
+    const { gx: overlappedHeadgx, gy: overlappedHeadgy } = overlappedHead;
 
     const distance = Math.sqrt(
-      Math.pow(headGx - overlappedHeadGx, 2) +
-        Math.pow(headGY - overlappedHeadGY, 2)
+      Math.pow(headgx - overlappedHeadgx, 2) +
+        Math.pow(headgy - overlappedHeadgy, 2)
     );
 
     const angle = Math.atan2(
-      overlappedHeadGY - headGY,
-      overlappedHeadGx - headGx
+      overlappedHeadgy - headgy,
+      overlappedHeadgx - headgx
     );
 
-    const gX = headGx + distance * Math.cos(angle);
-    const gY = headGY + distance * Math.sin(angle);
+    const gx = headgx + distance * Math.cos(angle);
+    const gy = headgy + distance * Math.sin(angle);
 
-    const isOverlapped = this.isOverlappingWithOtherHeadNode(gX, gY, relations);
+    const isOverlapped = this.isOverlappingWithOtherHeadNode(gx, gy, relations);
 
     if (isOverlapped) {
       return this.findNearestEmptySpace(overlappedHead, headNode, relations);
     }
 
-    return { gX, gY };
+    return { gx, gy };
   }
 
   createPath(node, relatedGroup, line, group) {
-    const { gX: headGx, gY: headGY } = node;
-    const { gX: relatedGroupGx, gY: relatedGroupGY } = relatedGroup;
-
-    console.log(headGY, headGx, relatedGroupGY, relatedGroupGx);
+    const { gx: headgx, gy: headgy } = node;
+    const { gx: relatedGroupgx, gy: relatedGroupgy } = relatedGroup;
 
     const path = line([
-      { x: headGx, y: headGY },
-      { x: relatedGroupGx, y: relatedGroupGY },
+      { x: headgx, y: headgy },
+      { x: relatedGroupgx, y: relatedGroupgy },
     ]);
-    console.log(path);
 
     this.wrapper
       .append("path")
@@ -383,6 +461,46 @@ class D3GraphHelper {
       .attr("stroke", "black")
       .attr("stroke-width", 1)
       .attr("fill", "none");
+  }
+
+  modalToggle(toggle) {
+    console.log(toggle);
+    d3.select("#modal_div").style(
+      "visibility",
+      toggle === "close" ? "hidden" : "visible"
+    );
+  }
+
+  createModal(html) {
+    d3.select("#root")
+      .append("div")
+      .attr("id", "modal_div")
+      .style("position", "absolute")
+      .style("visibility", "hidden")
+      .style("top", window.innerHeight / 2 - 200 + "px")
+      .style("left", window.innerWidth / 2 - 100 + "px")
+      .style("width", 200)
+      .style("height", 200)
+      .style("padding", "10px")
+      .style("border-radius", "10px")
+      .style("background-color", "white")
+      .style("box-shadow", "0px 4px 14px rgba(0, 0, 0, 0.15)")
+      .html(
+        `<div style="margin-top: 10px">
+            Burada məlumat xarakterli informasiyalar olacaq
+        </div>`
+      )
+      .append("span")
+      .html(
+        `<img src="https://static.thenounproject.com/png/1053756-200.png" style="width: 12px" />`
+      )
+      .style("position", "absolute")
+      .style("right", "5px")
+      .style("top", "5px")
+      .style("cursor", "pointer")
+      .on("click", (event) => {
+        this.modalToggle("close");
+      });
   }
 }
 
@@ -397,7 +515,7 @@ class D3DetailNode extends D3GraphHelper {
 
   create() {
     // create image inside and center of circle
-    const { x, y, gX, gY, r, image, clipId } = this.detail;
+    const { x, y, gx, gy, r, image, clipId } = this.detail;
 
     const groupInsideHeadNode = this.parent.select(
       `[${D3GraphConstants.DEFAULT_HEAD_NODE_CHILD_ID_ATTR}=${this.detail.id}]`
