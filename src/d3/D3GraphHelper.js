@@ -94,13 +94,6 @@ class D3GraphHelper {
     return `${detail.id}-${relatedDetail.id}`;
   }
 
-  createRelation(
-    relationId,
-    pathCoords
-  ) {
-    
-  }
-
   createHeadGroup({ id }, { gx, gy }) {
     console.log(gx, gy);
     return this.wrapper
@@ -228,6 +221,7 @@ class D3GraphHelper {
   }
 
   updateGroupPosition(node, gx, gy) {
+    console.log(node, gx, gy)
     node.gx = gx;
     node.gy = gy;
   }
@@ -350,7 +344,6 @@ class D3GraphHelper {
 
     if (isOverlapped) {
       return this.calculatePosition(headgx, headgy, data);
-      // return { gx, gy };
     }
 
     return { gx, gy };

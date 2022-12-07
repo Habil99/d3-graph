@@ -41,12 +41,14 @@ const nodes = [
             id: "ba",
             connected: false,
             bezierCurves: [],
+            curveRelationId: null
           },
           {
             parentId: "c",
             id: "ca",
             connected: false,
             bezierCurves: [],
+            curveRelationId: null
           },
 
         ],
@@ -87,6 +89,7 @@ const nodes = [
             id: "aa",
             connected: false,
             bezierCurves: [],
+            curveRelationId: null
           }
         ],
         x: 0,
@@ -126,6 +129,7 @@ const nodes = [
             id: "aa",
             connected: false,
             bezierCurves: [],
+            curveRelationId: null
           }
         ],
         x: 0,

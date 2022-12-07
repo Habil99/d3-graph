@@ -64,69 +64,54 @@ class D3Graph {
 
       if (currentGroup) {
         // and if not overlapping with other head node
-        const { x, y, dx, dy } = event;
-
         self.d3GraphHelper.updateGroupPosition(currentGroup, event.x, event.y);
 
+        currentNode.attr("transform", `translate(${event.x}, ${event.y})`);
+
         currentGroup.details.forEach((detail) => {
-          const groups = self.getTwoConnectedGroupInfo(
-            detail,
-            "all",
-            currentNode
-          );
-
-          // console.log(groups)
-          // debugger;
-          // console.log(self.nodes);
-          currentNode.attr("transform", `translate(${event.x}, ${event.y})`);
-
-          currentGroup.details.forEach((detail) => {
-            const { relatedDetailGroup, relatedGroup } =
-              self.getTwoConnectedGroupInfo(detail);
-
-            detail.pathCoords = self.linker(
+          detail.relatedDetails.forEach((relatedDetail) => {
+            relatedDetail.pathCoords = self.linker(
               detail,
               currentGroup,
-              relatedDetailGroup,
-              relatedGroup
+              self.nodes
+                .find((node) => node.id === relatedDetail.parentId)
+                .details.find((detail) => detail.id === relatedDetail.id),
+              self.nodes.find((node) => node.id === relatedDetail.parentId)
             ).pathCoords;
 
-            console.log(detail.relatedDetail);
-            detail.relatedDetail.bezierCurves.forEach((curve) => {
-              console.log("hereee");
-              curve.attr("d", detail.pathCoords);
-            });
+            console.log(d3.select(`[data-relation-id=${relatedDetail.curveRelationId}]`))
+
+            d3.select(`[data-relation-id=${relatedDetail.curveRelationId}]`).attr(
+              "d",
+              relatedDetail.pathCoords
+            );
+
+            // const groups = self.getTwoConnectedGroupInfo(
+            //   detail,
+            //   "all",
+            //   currentNode
+            // );
+
+            // currentNode.attr("transform", `translate(${event.x}, ${event.y})`);
+
+            // currentGroup.details.forEach((detail) => {
+            //   const { relatedDetailGroup, relatedGroup } =
+            //     self.getTwoConnectedGroupInfo(detail);
+
+            //   detail.pathCoords = self.linker(
+            //     detail,
+            //     currentGroup,
+            //     relatedDetailGroup,
+            //     relatedGroup
+            //   ).pathCoords;
+
+            //   console.log(detail.relatedDetail);
+            //   detail.relatedDetail.bezierCurves.forEach((curve) => {
+            //     console.log("hereee");
+            //     curve.attr("d", detail.pathCoords);
+            //   });
+            // });
           });
-
-          // groups.forEach(({ relatedGroup, relatedDetailGroup }) => {
-          //   // console.log(relatedGroup, relatedDetailGroup);
-          //   detail.pathCoords = self.linker(
-          //     detail,
-          //     currentNode,
-          //     relatedDetailGroup,
-          //     relatedGroup
-          //   ).pathCoords;
-
-          //   // console.log(detail, "detail");
-          //   // console.log(relatedGroup, "relatedGroup");
-          //   // console.log(relatedDetailGroup, "relatedDetailGroup");
-          //   // debugger;
-          //   d3.select(
-          //     `[data-relation-id=${self.d3GraphHelper.getRelationId(
-          //       detail,
-          //       relatedDetailGroup
-          //     )}]`
-          //   ).attr("d", detail.pathCoords);
-
-          //   // if (detail.bezierCurve) {
-          //   //   detail.bezierCurve.attr("d", detail.pathCoords);
-          //   // }
-
-          //   // if (relatedDetailGroup.bezierCurve) {
-          //   //   relatedDetailGroup.bezierCurve.attr("d", detail.pathCoords);
-          //   // }
-
-          // });
         });
       }
     }
@@ -273,13 +258,6 @@ class D3Graph {
               relatedDetailGroup
             );
 
-            // const relation = this.d3GraphHelper.createRelation(
-            //   relationId,
-            //   pathCoords
-            // );
-
-            // this.d3GraphHelper.appendRelation(relation);
-
             const curveLine = d3.select(
               d3.select("#parent-svg").select("g").node()
             );
@@ -288,10 +266,7 @@ class D3Graph {
               .append("path")
               .attr("id", "curve")
               .attr("d", pathCoords)
-              .attr(
-                "data-relation-id",
-                this.d3GraphHelper.getRelationId(detail, relatedDetailGroup)
-              )
+              .attr("data-relation-id", relationId)
               .attr("stroke", "#ACACAC")
               .attr("stroke-width", 1)
               .attr("fill", "none")
@@ -301,6 +276,7 @@ class D3Graph {
 
             //  create a shape so that the shape is on the line and at the same angle to it
             detail.bezierCurve = bezierCurve;
+            relatedDetail.curveRelationId = relationId;
 
             curveLine
               .append("a")
@@ -318,142 +294,6 @@ class D3Graph {
         });
       });
     });
-
-    // nodes.forEach((node) => {
-    //   if (node?.details?.length) {
-    //     node.details.forEach((detail) => {
-    //       const { relatedGroup, relatedDetailGroup } =
-    //         self.getTwoConnectedGroupInfo(detail);
-
-    //       if (relatedDetailGroup && relatedGroup.id !== mainGroup.id) {
-    //         // if (relatedDetailGroup.relatedDetail.connected || detail.relatedDetail.connected) {
-    //         //   // relatedDetailGroup.connected = true;
-    //         //   // detail.connected = true;
-
-    //         //   return;
-    //         // }
-
-    //         const pathCoords = this.linker(
-    //           detail,
-    //           node,
-    //           relatedDetailGroup,
-    //           relatedGroup
-    //         ).pathCoords;
-
-    //         const curveLine = d3.select(
-    //           d3.select("#parent-svg").select("g").node()
-    //         );
-
-    //         const bezierCurve = curveLine
-    //           .append("path")
-    //           .attr("id", "curve")
-    //           .attr("d", pathCoords)
-    //           .attr(
-    //             "data-relation-id",
-    //             this.d3GraphHelper.getRelationId(detail, relatedDetailGroup)
-    //           )
-    //           .attr("stroke", "#ACACAC")
-    //           .attr("stroke-width", 1)
-    //           .attr("fill", "none")
-    //           .attr("stroke-dasharray", "5, 5")
-    //           .attr("stroke-linecap", "round")
-    //           .attr("stroke-linejoin", "round");
-
-    //         //  create a shape so that the shape is on the line and at the same angle to it
-    //         detail.bezierCurve = bezierCurve;
-
-    //         curveLine
-    //           .append("a")
-    //           .attr("fill", "red")
-    //           .append("text")
-    //           .append("textPath")
-    //           .attr("xlink:href", "#curve")
-    //           .attr("startOffset", "50%")
-    //           .style("cursor", "pointer")
-    //           .text(relatedGroup.relationName)
-    //           .on("click", (event) => {
-    //             this.d3GraphHelper.modalToggle("open");
-    //           });
-
-    //         // detail.relatedDetail.connected = true;
-    //         // relatedDetailGroup.connected = true;
-    //         detail.relatedDetail.bezierCurves.push(bezierCurve);
-    //         relatedDetailGroup.relatedDetail.bezierCurves.push(bezierCurve);
-    //       }
-    //       // }
-    //     });
-    //   }
-
-    //   // node.details.forEach((detail) => {
-    //   //   // find relation inside relations
-    //   //   const relatedGroup = this.relations.find(
-    //   //     (relation) => relation.id === detail.relationId
-    //   //   );
-
-    //   //   if (relatedGroup) {
-    //   //     // find position for related group in screen, find new position if screen is not empty
-    //   //     const { gx, gy } = this.d3GraphHelper.findPositionForRelatedGroup(
-    //   //       relatedGroup,
-    //   //       this.relations,
-    //   //       node
-    //   //     );
-
-    //   //     // update related group position
-    //   //     this.d3GraphHelper.updateGroupPosition(relatedGroup, gx, gy);
-
-    //   //     // create related group element
-    //   //     this.createHeadNode(relatedGroup, gx, gy);
-
-    //   //     // this.d3GraphHelper.updateGroupPosition(relatedGroup, gx, gy);
-
-    //   //     //  find detail group of related group
-    //   //     const relatedDetail = relatedGroup.details[0];
-    //   //     const headDetail = detail;
-
-    //   //     const { coords, pathCoords } = this.linker(
-    //   //       headDetail,
-    //   //       node,
-    //   //       relatedDetail,
-    //   //       relatedGroup
-    //   //     );
-
-    //   //     const curveLine = d3
-    //   //       .select(d3.select("#parent-svg").select("g").node())
-
-    //   //       curveLine.append("path")
-    //   //       .attr("id", "curve")
-    //   //       .attr("d", pathCoords)
-    //   //       .attr("data-relation-id", "test")
-    //   //       .attr("stroke", "#ACACAC")
-    //   //       .attr("stroke-width", 1)
-    //   //       .attr("fill", "none")
-    //   //       .attr("stroke-dasharray", "5, 5")
-    //   //       .attr("stroke-linecap", "round")
-    //   //       .attr("stroke-linejoin", "round");
-
-    //   //     const centerCoords = {
-    //   //       x: (coords.x0 + coords.x1) / 2,
-    //   //       y: (coords.y0 + coords.y1) / 2,
-    //   //     };
-
-    //   //     // create a shape so that the shape is on the line and at the same angle to it
-    //   //     headDetail.bezierCurve = curveLine;
-
-    //   //       curveLine
-    //   //       .append('a')
-    //   //       .attr('fill', 'red')
-    //   //       .append("text")
-    //   //       .append("textPath")
-    //   //       .attr("xlink:href", "#curve")
-    //   //       .attr("startOffset", "50%")
-    //   //       .style('cursor', 'pointer')
-    //   //       .text(relatedGroup.relationName)
-    //   //       .on('click', (event) => {
-    //   //           this.d3GraphHelper.modalToggle('open');
-    //   //       })
-    //   //   }
-    //   // });
-    // });
   }
 
   arcPath(node1, head1, node2, head2) {
