@@ -111,6 +111,10 @@ class D3Graph {
         justify-content: center;
         align-items: center;
       }
+
+      .close-btn-span {
+        margin: 0 0 4px 2px;
+      }
     `;
   }
 
