@@ -95,7 +95,6 @@ class D3GraphHelper {
   }
 
   createHeadGroup({ id }, { gx, gy }) {
-    console.log(gx, gy);
     return this.wrapper
       .append("g")
       .attr("data-head-node", true)
@@ -221,7 +220,6 @@ class D3GraphHelper {
   }
 
   updateGroupPosition(node, gx, gy) {
-    console.log(node, gx, gy)
     node.gx = gx;
     node.gy = gy;
   }
@@ -258,6 +256,20 @@ class D3GraphHelper {
       headgy + outerCircleRadius * 2 * Math.sin((angle * Math.PI) / 180);
 
     return { gx: headgx - gx, gy: headgy - gy };
+  }
+  
+  calculatePositionOnScreen(
+    outerCircleRadius,
+    index,
+    length
+  ) {
+    const angle = (360 / length) * index;
+    const gx =
+      window.innerWidth / 2 + window.innerWidth / 3 * Math.cos((angle * Math.PI) / 180);
+    const gy =
+      window.innerHeight / 2 + window.innerHeight / 3 * Math.sin((angle * Math.PI) / 180);
+
+    return { gx, gy };
   }
 
   createDetailNodes(headNode, outerCircleRadius) {
@@ -361,33 +373,6 @@ class D3GraphHelper {
     ]);
   }
 
-  observeAllHeadNodePositionsWhileDragging() {
-    const allHeadNodes = d3
-      .selectAll(`[${D3GraphConstants.DEFAULT_HEAD_NODE_DATA_ATTR}]`)
-      .nodes();
-
-    // allHeadNodes.forEach((headNode) => {
-    //   rxJs.fromEvent(headNode, "mousemove").pipe().subscribe((observer) => {
-    //     if (observer.target) {
-    //       console.log(observer.target.parentElement)
-    //       const id = observer.target.parentElement.dataset.headNodeId;
-
-    //       const node = this.nodes.find((node) => node.id === id);
-    //       console.log(node, id)
-
-    //       if (node) {
-    //         // if this node is overlapping with other nodes, then change the position of this node
-    //         const { gx, gy } = this.calculatePosition(node.gx, node.gy, [
-    //           ...this.nodes,
-    //         ])
-
-    //         console.log(gx, gy)
-    //       }
-    //     }
-    //   })
-    // })
-  }
-
   isOverlappingWithOtherHeadNode(x, y, relations) {
     const isOverlapped = this.checkOverlapped(x, y, {
       nodes: [...this.nodes, ...relations],
@@ -457,7 +442,6 @@ class D3GraphHelper {
   }
 
   modalToggle(toggle) {
-    console.log(toggle);
     d3.select("#modal_div").style(
       "visibility",
       toggle === "close" ? "hidden" : "visible"

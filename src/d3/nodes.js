@@ -21,13 +21,11 @@ const nodes = [
   {
     id: "a",
     clipId: generateUniqueId(),
-    name: "Boy #1",
     x: 0,
     y: 0,
     gx: 0,
     gy: 0,
     r: radius,
-    color: "red",
     dangerous: 80,
     isMain: true,
     image:
@@ -41,14 +39,20 @@ const nodes = [
             id: "ba",
             connected: false,
             bezierCurves: [],
-            curveRelationId: null
+            curveRelationId: null,
+            title: "Facebook",
+            description: "Facebook is a social media platform",
+            tooltip: null
           },
           {
             parentId: "c",
             id: "ca",
             connected: false,
             bezierCurves: [],
-            curveRelationId: null
+            curveRelationId: null,
+            title: "Facebook",
+            description: "Facebook is a social media platform",
+            tooltip: null
           },
 
         ],
@@ -60,7 +64,30 @@ const nodes = [
         image: "https://img.icons8.com/ios/2x/facebook-new.png",
         relationId: detailId,
         clipId: generateUniqueId(),
-        name: "Node 2",
+        bezierCurve: null,
+      },
+      {
+        id: "ab",
+        relatedDetails: [
+          {
+            parentId: "c",
+            id: "cb",
+            connected: false,
+            bezierCurves: [],
+            curveRelationId: null,
+            title: "Facebook",
+            description: "Facebook is a social media platform",
+            tooltip: null
+          },
+        ],
+        x: 0,
+        y: 0,
+        gx: 0,
+        gy: 0,
+        r: 20,
+        image: "https://img.icons8.com/ios/2x/facebook-new.png",
+        relationId: detailId,
+        clipId: generateUniqueId(),
         bezierCurve: null,
       },
     ],
@@ -69,13 +96,11 @@ const nodes = [
     id: detailId,
     relationName: "Facebook",
     clipId: generateUniqueId(),
-    name: "Girl #1",
     x: 0,
     y: 0,
     gx: 0,
     gy: 0,
     r: radius,
-    color: "red",
     dangerous: 25,
     isMain: false,
     image:
@@ -89,7 +114,10 @@ const nodes = [
             id: "aa",
             connected: false,
             bezierCurves: [],
-            curveRelationId: null
+            curveRelationId: null,
+            title: "Facebook",
+            description: "Facebook is a social media platform",
+            tooltip: null,
           }
         ],
         x: 0,
@@ -100,7 +128,6 @@ const nodes = [
         image: "https://img.icons8.com/ios/2x/facebook-new.png",
         relationId: null,
         clipId: generateUniqueId(),
-        name: "Node 2",
         bezierCurve: null,
       },
     ],
@@ -109,7 +136,6 @@ const nodes = [
     id: "c",
     relationName: "Facebook",
     clipId: generateUniqueId(),
-    name: "Girl #2",
     x: 0,
     y: 0,
     gx: 0,
@@ -128,7 +154,10 @@ const nodes = [
             id: "aa",
             connected: false,
             bezierCurves: [],
-            curveRelationId: null
+            curveRelationId: null,
+            title: "Facebook",
+            description: "Facebook is a social media platform",
+            tooltip: null
           }
         ],
         x: 0,
@@ -139,7 +168,28 @@ const nodes = [
         image: "https://img.icons8.com/ios/2x/facebook-new.png",
         relationId: null,
         clipId: generateUniqueId(),
-        name: "Node 2",
+        bezierCurve: null,
+      },
+      {
+        id: "cb",
+        relatedDetails: [
+          {
+            parentId: "a",
+            id: "ab",
+            connected: false,
+            bezierCurves: [],
+            curveRelationId: null,
+            tooltip: null
+          }
+        ],
+        x: 0,
+        y: 0,
+        gx: 0,
+        gy: 0,
+        r: 20,
+        image: "https://img.icons8.com/ios/2x/facebook-new.png",
+        relationId: null,
+        clipId: generateUniqueId(),
         bezierCurve: null,
       },
     ],

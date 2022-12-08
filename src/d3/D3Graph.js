@@ -2,6 +2,7 @@ import * as d3 from "d3";
 
 import D3GraphConstants from "./D3GraphConstants";
 import D3GraphHelper from "./D3GraphHelper";
+import D3Tooltip, { tooltipStyles } from "./D3Tooltip";
 import nodes from "./nodes";
 
 class D3Graph {
@@ -45,7 +46,7 @@ class D3Graph {
      * @property {number} nodes.details.x - X coordinate of the node for detail position
      * @property {number} nodes.details.y - Y coordinate of the node for detail position
      * @property {number} nodes.details.gx - X coordinate of the node for group detail position
-     * @property {number} nodes.details.gy - Y coordinate of the node for group detail position 
+     * @property {number} nodes.details.gy - Y coordinate of the node for group detail position
      * @property {number} nodes.details.r - Radius of the node
      * @property {string} nodes.details.image - Image of the node
      * @property {string} nodes.details.relationId - Unique id of the relation
@@ -94,6 +95,21 @@ class D3Graph {
     return `
       .head-node {
         cursor: pointer;
+      }
+
+      .close-btn {
+        cursor: pointer;
+        background-color: #ffa500;
+
+        border: none;
+        border-radius: 4px;
+        width: 20px;
+        height: 20px;
+        color: white;
+        font-size: 12px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
       }
     `;
   }
@@ -149,6 +165,17 @@ class D3Graph {
               ? relatedDetail.curveRelationId
               : findId();
 
+            // self.tooltip.updatePosition(relatedDetail)
+            // console.log(relatedDetail)
+
+            // if (relatedDetail.tooltip) {
+            //   console.log(
+            //     relatedDetail.relationTarget,
+            //     d3.select(relatedDetail.relationTarget)
+            //   );
+            //   // relatedDetail.tooltip.updatePosition(relatedDetail.relationTarget, 300);
+            // }
+
             d3.select(`[data-relation-id=${id}]`).attr(
               "d",
               relatedDetail.pathCoords
@@ -164,8 +191,7 @@ class D3Graph {
         d3
           .drag()
           .on("drag", onDrag)
-          .on("end", function (event) {
-          })
+          .on("end", function (event) {})
       );
   }
 
@@ -173,10 +199,18 @@ class D3Graph {
   createHeadNode(node) {
     const { x, y, r, image, clipId, dangerous } = node;
 
-    const position = this.d3GraphHelper.calcPositionForCurrentNode(
+    const position = this.d3GraphHelper.calculatePositionOnScreen(
+      this.outerCircleRadius,
+      this.nodes.indexOf(node),
+      this.nodes.length
+    );
+
+    /**
+     * calcPositionForCurrentNode(
       this.nodes,
       node
     );
+     */
 
     const headGroup = this.d3GraphHelper.createHeadGroup(node, position);
 
@@ -283,11 +317,23 @@ class D3Graph {
               .attr("d", pathCoords)
               .attr("data-relation-id", relationId)
               .attr("stroke", "#ACACAC")
-              .attr("stroke-width", 1)
+              .attr("stroke-width", 2)
               .attr("fill", "none")
               .attr("stroke-dasharray", "5, 5")
               .attr("stroke-linecap", "round")
-              .attr("stroke-linejoin", "round");
+              .attr("stroke-linejoin", "round")
+              .on("mousemove", (event) => {
+                // increase stroke width
+                d3.select(event.target)
+                  .attr("stroke-width", 3)
+                  .attr("stroke", "#3F51B5");
+              })
+              .on("mouseout", (event) => {
+                // decrease stroke width
+                d3.select(event.target)
+                  .attr("stroke-width", 2)
+                  .attr("stroke", "#ACACAC");
+              });
 
             //  create a shape so that the shape is on the line and at the same angle to it
             detail.bezierCurve = bezierCurve;
@@ -297,13 +343,35 @@ class D3Graph {
               .append("a")
               .attr("fill", "red")
               .append("text")
+              .attr("x", 50)
+              .attr("y", 20)
               .append("textPath")
               .attr("xlink:href", "#curve")
               .attr("startOffset", "50%")
               .style("cursor", "pointer")
               .text(relatedGroup.relationName)
               .on("click", (event) => {
-                this.d3GraphHelper.modalToggle("open");
+                const tooltip = new D3Tooltip(this.parent);
+
+                tooltip.createTooltip(event.x, event.y);
+                tooltip.showTooltip(
+                  `
+                  <div style="${tooltipStyles.wrapper}">
+                    <p style="${tooltipStyles.title}">
+                    VAZ 2107 markalı, 54-BA-279
+                    nömrəli avtomobil Əliyev Adil
+                    Vasif oğlu tərəfindən Əliyev
+                    Nəriman Adil oğluna etibar edilmişdir
+                    </p>
+                    <p style="${tooltipStyles.date}">Tarix: 21.05.2022</p>
+                  </div>`,
+                  event.clientX,
+                  event.clientY
+                );
+
+                relatedDetail.tooltip = tooltip;
+                relatedDetail.relationTarget = event.target;
+                // detail.tooltip = tooltip;
               });
           }
         });
