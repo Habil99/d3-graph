@@ -115,7 +115,6 @@ const nodes = [
     gx: 0,
     gy: 0,
     r: radius,
-    color: "red",
     dangerous: 25,
     isMain: false,
     image:
