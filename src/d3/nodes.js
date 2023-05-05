@@ -94,7 +94,6 @@ const nodes = [
   },
   {
     id: detailId,
-    relationName: "Facebook",
     clipId: generateUniqueId(),
     x: 0,
     y: 0,
@@ -179,7 +178,9 @@ const nodes = [
             connected: false,
             bezierCurves: [],
             curveRelationId: null,
-            tooltip: null
+            title: "Facebook",
+            description: "Facebook is a social media platform",
+            tooltip: null,
           }
         ],
         x: 0,

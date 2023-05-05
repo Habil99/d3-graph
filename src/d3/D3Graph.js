@@ -353,7 +353,7 @@ class D3Graph {
               .attr("xlink:href", "#curve")
               .attr("startOffset", "50%")
               .style("cursor", "pointer")
-              .text(relatedGroup.relationName)
+              .text(relatedDetail.title)
               .on("click", (event) => {
                 const tooltip = new D3Tooltip(this.parent);
 
